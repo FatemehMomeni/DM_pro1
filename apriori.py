@@ -17,26 +17,6 @@ class Arules:
     freqSet = defaultdict(int)
 
     def __init__(self, minSupport, minConfidence):
-        """optparser = OptionParser()
-        optparser.add_option("-f", "--inputFile", dest="input", help="filename containing csv", default=None)
-        optparser.add_option("-s", "--minSupport", dest="minS", help="minimum support value", default=0.15,
-                             type="float", )
-        optparser.add_option("-c", "--minConfidence", dest="minC", help="minimum confidence value", default=0.6,
-                             type="float", )
-        #optparser.add_option("-q", "--questionNum", dest="num", help="number of question", default=None,
-                             #type="int", )
-        (options, args) = optparser.parse_args()
-        inFile = None
-        if options.input is None:
-            self.inFile = sys.stdin
-        elif options.input is not None:
-            self.inFile = self.dataFromFile(options.input)
-        else:
-            print("No dataset filename specified, system with exit\n")
-            sys.exit("System will exit")
-
-        minSupport = options.minS
-        minConfidence = options.minC"""
         items = self.get_frequent_item_sets(minSupport)
         rules = self.get_arules(minConfidence)
         self.printResults(items, rules)
@@ -46,7 +26,7 @@ class Arules:
         return chain(*[combinations(arr, i + 1) for i, a in enumerate(arr)])
 
     # returns candidate subset
-    def returnItemsWithMinSupport(self, itemSet, transactionList, minSupport, freqSet):
+    def returnItemsWithMinSupport(self, itemSet, minSupport, freqSet):
         _itemSet = set()
         localSet = defaultdict(int)
 
@@ -69,25 +49,14 @@ class Arules:
     def joinSet(self, itemSet, length):
         return set([i.union(j) for i in itemSet for j in itemSet if len(i.union(j)) == length])
 
-    """def getItemSetTransactionList(self, data_iterator):
-        itemSet = set()
-        for record in data_iterator:
-            transaction = frozenset(record)
-            self.transactionList.append(transaction)
-            for item in transaction:
-                itemSet.add(frozenset([item]))
-                self.unique_items_list.append(item)
-        return itemSet, self.transactionList"""
-
     def apriori(self, minSupport):
-        #itemSet, self.transactionList = self.getItemSetTransactionList(data_iter)
-        oneCSet = self.returnItemsWithMinSupport(itemSet, transactionList, minSupport, self.freqSet)
+        oneCSet = self.returnItemsWithMinSupport(itemSet, minSupport, self.freqSet)
         currentLSet = oneCSet
         k = 2
         while currentLSet != set([]):
             self.largeSet[k - 1] = currentLSet
             currentLSet = self.joinSet(currentLSet, k)
-            currentCSet = self.returnItemsWithMinSupport(currentLSet, transactionList, minSupport, self.freqSet)
+            currentCSet = self.returnItemsWithMinSupport(currentLSet, minSupport, self.freqSet)
             currentLSet = currentCSet
             k = k + 1
 
@@ -111,23 +80,18 @@ class Arules:
                     if len(remain) > 0:
                         confidence = self.getSupport(item) / self.getSupport(element)
                         if confidence >= minConfidence:
-                            toRetRules.append(((tuple(element), tuple(remain)), confidence))
+                            lift = confidence / self.getSupport(remain)
+                            if lift > 1:
+                                toRetRules.append(((tuple(element), tuple(remain)), lift))
         return toRetRules
 
     def printResults(self, items, rules):
         for item, support in sorted(items, key=lambda x: x[1]):
             print("item: %s , %.3f" % (str(item), support))
         print("\n------------------------ RULES:")
-        for rule, confidence in sorted(rules, key=lambda x: x[1]):
+        for rule, lift in sorted(rules, key=lambda x: x[1]):
             pre, post = rule
-            print("Rule: %s ==> %s , %.3f" % (str(pre), str(post), confidence))
-
-    """def dataFromFile(self, fname):
-        with open(fname, "rU") as file_iter:
-            for line in file_iter:
-                line = line.strip().rstrip(",")
-                record = frozenset(line.split(","))
-                yield record"""
+            print("Rule: %s ==> %s , %.3f" % (str(pre), str(post), lift))
 
 
 def getItemSetTransactionList(data_iterator):
