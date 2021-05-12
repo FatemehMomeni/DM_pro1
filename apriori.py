@@ -6,7 +6,6 @@ import exploratory
 
 
 transactionList = list()
-unique_items_list = []
 itemSet = set()
 
 
@@ -86,12 +85,12 @@ class Arules:
         return toRetRules
 
     def printResults(self, items, rules):
-        for item, support in sorted(items, key=lambda x: x[1]):
-            print("item: %s , %.3f" % (str(item), support))
-        print("\n------------------------ RULES:")
-        for rule, lift in sorted(rules, key=lambda x: x[1]):
+        for item, support in items[:10]:
+            print("item: %s , support: %.3f" % (str(item), support))
+        print("\n------------------------ RULES ------------------------")
+        for rule, lift in sorted(rules, key=lambda x: x[1], reverse=True):
             pre, post = rule
-            print("Rule: %s ==> %s , %.3f" % (str(pre), str(post), lift))
+            print("Rule: %s ==> %s , lift: %.3f" % (str(pre), str(post), lift))
 
 
 def getItemSetTransactionList(data_iterator):
@@ -100,7 +99,6 @@ def getItemSetTransactionList(data_iterator):
         transactionList.append(transaction)
         for item in transaction:
             itemSet.add(frozenset([item]))
-            unique_items_list.append(item)
 
 
 def dataFromFile(fname):
@@ -130,9 +128,8 @@ if __name__ == "__main__":
     getItemSetTransactionList(inFile)
 
     if options.num == 1:
-        analyse = exploratory.Analysis(transactionList, unique_items_list)
+        analyse = exploratory.Analysis(transactionList, itemSet)
     else:
         minSupport = options.minS
         minConfidence = options.minC
         apriori = Arules(minSupport, minConfidence)
-

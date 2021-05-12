@@ -12,6 +12,7 @@ class Analysis:
         self.analyse(transactionList, unique_items_list)
 
     def analyse(self, transactionList, unique_items_list):
+        unique_items_list = list(unique_items_list)
         # generating empty dataframe with items as columns
         df_apriori = pd.DataFrame(columns=unique_items_list)
         #print(df_apriori)
@@ -44,16 +45,16 @@ class Analysis:
     
         #  ------------------------------- adding purchased percentage column
         #sorted_df['Purchased%'] = sorted_df.Purchased / sum(sorted_df.Purchased)
-        print(sorted_df.head())
+        #print(sorted_df.head())
     
         #  ------------------------------- Finding out average of the total purchased%
         #print(np.nanmean(sorted_df['Purchased%']))
     
         #  ------------------------------- Plotting sorted top purchased products
         fig = plt.subplots(figsize=(20, 10))
-        purchased = sorted_df.head(50).xs('Purchased', axis=1)
+        purchased = sorted_df.xs('Purchased', axis=1)
         purchased.plot(kind='bar', fontsize=16)
         plt.title('Purchased top Count', fontsize=30)
         plt.xlabel('Products', fontsize=20)
         plt.ylabel('total qty. purchased', fontsize=20)
-        #plt.show()
+        plt.show()
